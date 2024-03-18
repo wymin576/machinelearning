@@ -1,0 +1,2012 @@
+---
+title: "Big Data Analysis"
+author: "Yanmin Wang"
+date: "2024/2/26"
+output: html_document
+---
+# **第一课** 软件安装        
+
+## 下载安装R,Rtools和Rstudio           
+下载R: 搜索cran，根据提示下载； 如果速度慢，可以从中科大或者清华的镜像下载，网址为
+https://mirrors.tuna.tsinghua.edu.cn/CRAN/   或者
+https://mirrors.ustc.edu.cn/CRAN/  
+安装时全部采用默认选项
+       
+下载Rtools:网址https://cran.r-project.org/bin/windows/Rtools/
+
+下载Rstudio:网址https://posit.co/download/rstudio-desktop/
+
+## 安装包            
+
+两种方法：                
+命令install.packages('mice',repos= "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")       
+菜单操作：右下角packages-install
+批量安装包
+```{r eval=FALSE,message=FALSE,eval=FALSE}
+# 批量安装多个包
+pkgs <- c('tidyverse','mice','nycflights13','vcd') 
+install.packages(pkgs,repos= "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")
+# 批量加载多个包
+lapply(pkgs, require, character.only = TRUE)
+
+```
+
+
+## 参考教材
+
+1.Robert I. Kabacoff. R语言实战.人民邮电出版社，2016.
+
+2.李东风. R语言教程.
+https://www.math.pku.edu.cn/teachers/lidf/docs/Rbook/html/_Rbook/index.html
+
+3.薛薇. R语言：大数据分析中的统计方法及应用.北京：电子工业出版社，2018
+
+```{r warning=F,message=FALSE,eval=FALSE}
+# install.packages('mice')
+# help(package='mice')
+library(mice)
+# ?ampute
+
+```
+
+Tips:
+
+1.能够用tidyverse,就不要用R base；        
+2.复制粘贴超过两次，就应用函数了；        
+3.管道连接符%>% 可以理解为python里对象的.号。
+4.()用于函数,[]用于索引,{}用于函数编程。
+
+
+# 第一部分 R Base
+
+**注意**：        
+1.在脚本操作，file-new file -R script;        
+2.尽量用快捷键
+
+alt-:  <-       
+ctrl+enter:  run  code      
+ctrl+shift+m:  %>%        
+
+
+## 1.R语言对象
+
+|     | 同质  |异质|
+|  :----:  | :----:  |:----: |
+| 一维  | 向量 |列表|
+| 二维  | 矩阵 |数据框|
+| 三维 |数列  | |
+|  |  | |
+### 向量
+```{r}
+# create a numeric vector
+c(1:9)
+length(c(1:9))
+# character vector
+letters[1:26]
+c('a','c','f')
+# homogeneity elements
+c('a','b','c',4)
+c('1',2:4)
+# create a logical vector
+c(1:9)==4  
+(c(1:9)==4)*1 # Turn logical vector into numeric vector
+
+# transform from numeric vector to character vector 
+as.character(c(1:9))
+# as.numeric
+x <- as.numeric(as.character(c(1:9)));x
+
+#how to access the element
+a <- c(1:9)
+a[1]
+a[-1]
+a[c(1,4,9)]
+```
+
+```{r}
+# 1.1. How to repeat vectors in R
+# a) To repeat the vector c(0, 0, 7) three times, use this code:
+
+rep(c(0, 0, 7), times = 4)
+
+# b) We can also repeat every value by specifying each argument, like this:
+
+ rep(c(2, 4, 2), each = 2)
+
+# c) For each value, we can tell R how often it has to repeat:
+
+rep(c(0, 7), times = c(4,3))
+
+# d) In seq, we use the argument, length.out to define R. It will repeat the vector until it reaches the specified length, even if the last repetition is incomplete.
+
+ rep(1:3,length.out=9)
+ 
+ # 2. R seq() Function
+ # a) In order to use integers to create vectors:
+ 1:5;2:-5
+
+# b) make steps in a sequence.
+ seq(from = 4.5, to = 3.0, by = -0.5)
+
+# c) specify the length of the sequence by using the argument, length.out. Afterwards, R can calculate the step size by itself.
+ seq(from = -2.7, to = 1.3, length.out = 9)
+
+
+```
+
+
+常用函数：length(),sum(),rep()
+
+#### 因子factor
+类别（名义型）变量和有序类别（有序型）变量在R中称为因子（factor）。       
+```{r}
+x1 <- c("Dec", "Apr", "Jan", "Mar")
+
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+y1 <- factor(x1, levels = month_levels)
+y1
+
+sort(x1)
+sort(y1)
+
+```
+
+
+### 列表
+```{r}
+# create a list
+
+a <- list(1:9,letters[1:3]);a
+a[1]
+# compare the difference
+a[1][1]
+a[[1]][1]
+# the second method to access element
+a <- list(b=1:9,c=letters[1:3])
+a$b
+a$c
+a$b[1]
+
+```
+常用函数：unlist,
+
+### 矩阵
+```{r results='hide'}
+# create a matrix
+matrix(c(1:9),nrow = 3)
+matrix(c(1:9),nrow = 3,byrow = TRUE)
+
+x <- matrix(c(1:9),nrow = 3,byrow = T,dimnames = list(LETTERS[1:3], letters[1:3]))
+x
+
+# how to index the elements
+x[1,1]
+x[1,]
+x[,1]
+x[1:2,1:2]
+matrix(letters[1:9],nrow = 3,byrow = T)
+```
+
+### 数据框
+```{r }
+# create a dataframe
+mydf <- as.data.frame(cbind(c(1:9),letters[1:9]))
+mydf
+str(mydf)
+
+mydf1 <- data.frame(x=c(1:9),y=letters[1:9])
+str(mydf1)
+mydf1[1,1]
+mydf1$x
+dim(mydf1);nrow(mydf1);ncol(mydf1)
+
+```
+### 数列
+
+
+```{r}
+array(c(1:27),c(3,3,3))
+
+```
+
+## 常用函数       
+```{r}
+# ?
+# help(packages = 'mice')
+# setwd()
+# getwd()
+# typeof(c(1:9))
+# str(c(1:9))
+# mode(c(1:9))
+# apply()
+```
+
+## 函数表
+### the first function to learn       
+
+ ?, str
+
+### important operators and assignment        
+
+ %in%, match, =, <-, «-, $, [, [[, head, tail, subset, with, assign, get
+
+### comparison    
+
+ all.equal, identical, !=, ==, >, >=, <, <=, is.na, complete.cases, is.finite       
+
+### basic math
+
+ *, +, -，/, ^, %%, %/%, abs, sign, acos, asin, atan, atan2, sin, cos, tan, ceiling, floor, round, trunc,
+signif, exp, log, log10, log2, sqrt, max, min, p rod, sum, cummax, cummin, cumprod, cumsum, diff, pmax,
+pmin, range, mean, median, cor, sd, var, rle
+### functions to do with functions
+
+ function, missing, on.exit, return, invisible
+
+### logical & sets        
+
+ &, |, !, xor, all, any, intersect, union, setdiff, setequal, which
+
+### vectors and matrices        
+
+ c, matrix
+
+### automatic coercion rules character > numeric > logical        
+
+ length, dim, ncol, nrow, cbind, rbind, names, colnames, rownames, t, diag, sweep, as.matrix, data.matrix
+
+### making vectors        
+
+ c, rep, rep_len, seq, seq_len, seq_along, rev, sample, choose, factorial, combn, (is/as).(character/numeric/logical/. . . )
+
+### lists & data.frame        
+
+ list, unlist, data.frame, as.data.frame,
+split, expand.grid
+
+### control flow        
+
+ if, &&, ||, for, while, next, break, switch, ifelse
+
+### apply & friends       
+
+ lapply, sapply, vapply, apply, tapply, replicate
+
+## 练习题
+### 题1
+```{r results='hide'}
+ Student <- c("John Davis", "Angela Williams", "Bullwinkle Moose", 
+ "David Jones", "Janice Markhammer", "Cheryl Cushing", 
+ "Reuven Ytzrhak", "Greg Knox", "Joel England", 
+ "Mary Rayburn") 
+  Math <- c(502, 600, 412, 358, 495, 512, 410, 625, 573, 522) 
+  Science <- c(95, 99, 80, 82, 75, 85, 80, 95, 89, 86) 
+  English <- c(25, 22, 18, 15, 20, 28, 15, 30, 27, 18) 
+
+# 生成文件名为score的数据框
+
+# 将每科成绩标准化(mean(),sd(),scale())
+
+
+# 求学生总成绩score_tot(rowSums())
+
+
+# 根据分位数(0.5,0.7,0.9)生成新变量表示分数等级(D,C,B,A)
+
+# 按照总成绩排名(order())
+
+
+```
+### 题2
+```{r results='hide'}
+# 基于mtcars数据,
+
+# 该数据框有几行，有几列
+
+# 选择mpg,cyl,disp,hp,wt等变量
+
+# 选择前10条记录
+
+# 选择前20条记录，前5个字段
+
+# 选择车重wt大于3吨的记录
+
+
+
+# 选择自动挡车(am=0)
+
+
+```
+### 题3
+```{r results='hide',warning=FALSE}
+# 基于nycflights13包的flights数据集
+# finds all flights that departed in November or December
+
+
+# Had an arrival delay of two or more hours
+
+
+# Flew to Houston (IAH or HOU)
+
+
+# Were operated by United, American, or Delta
+
+
+# Departed in summer (July, August, and September)
+
+# Arrived more than two hours late, but didn’t leave late
+
+# Were delayed by at least an hour, but made up over 30 minutes in flight
+
+# Departed between midnight and 6am (inclusive)
+
+#  Use order() to order by a column 'dep_delay' in descending order
+
+
+# Sort flights to find the most delayed flights. Find the flights that left earliest.
+
+# Sort flights to find the fastest (highest speed) flights.
+
+# Which flights travelled the farthest? Which travelled the shortest?
+
+# select dep_time, dep_delay, arr_time, and arr_delay from flights.
+
+
+
+```
+
+集合操作Set Operations    
+
+R includes some handy set operations, including these:    
+
+union(x,y): Union of the sets x and y   
+
+intersect(x,y): Intersection of the sets x and y    
+
+setdiff(x,y): Set difference between x and y, consisting of all elements of x that are not in y   
+
+setequal(x,y): Test for equality between x and y    
+
+c %in% y: Membership, testing whether c is an element of the set y    
+choose(n,k): Number of possible subsets of size k chosen from a set of size n   
+
+Here are some simple examples of using these functions:   
+
+```{r}
+ x <- c(1,2,5)
+ y <- c(5,1,8,9)
+ union(x,y)
+
+ intersect(x,y)
+
+ setdiff(x,y)
+
+ setdiff(y,x)
+
+ setequal(x,y)
+
+ setequal(x,c(1,2,5))
+
+ 2 %in% x
+
+ 2 %in% y
+
+ choose(5,2)
+
+```
+
+## 2. control flow and function   
+
+### self-defined funciton        
+
+myfunction <- function(arg1, arg2, ... ){ 
+ statements 
+ return(object) 
+} 
+
+```{r}
+myfun1 <- function(x) print(x)
+myfun1(3)
+```
+
+
+two primary tools of control flow: choices and loops.       
+Choices, like if statements and switch() calls.       
+Loops, like for and while       
+
+### choices            
+if (condition) true_action
+if (condition) true_action else false_action
+
+```{r}
+grade <- function(x) {
+  if (x > 90) {
+    "A"
+  } else if (x > 80) {
+    "B"
+  } else if (x > 50) {
+    "C"
+  } else {
+    "F"
+  }
+}
+grade(100)
+
+
+greet <- function(name, birthday = FALSE) {
+  paste0(
+    "Hi ", name,
+    if (birthday) " and HAPPY BIRTHDAY"
+  )
+}
+
+greet("Maria", FALSE)
+
+greet("Jaime", TRUE)
+
+
+```
+*Vectorised if*
+Handling vectors of values is the job of ifelse(): a vectorised function with test, yes, and no vectors
+
+```{r}
+x <- 1:10
+
+ifelse(x %% 5 == 0, "XXX", as.character(x))
+
+ifelse(x %% 2 == 0, "even", "odd")
+```
+*switch()* statement
+
+
+```{r}
+x_option <- function(x) {
+  if (x == "a") {
+    "option 1"
+  } else if (x == "b") {
+    "option 2" 
+  } else if (x == "c") {
+    "option 3"
+  } else {
+    stop("Invalid `x` value")
+  }
+}
+x_option('a')
+
+```
+more succinct
+```{r}
+x_option <- function(x) {
+  switch(x,
+    a = "option 1",
+    b = "option 2",
+    c = "option 3",
+    stop("Invalid `x` value")
+  )
+}
+x_option('a')
+```
+
+### Loops            
+
+for (var in seq) statemen
+for (item in vector) perform_action
+```{r}
+for (i in 1:3) {
+  print(i)
+}
+
+
+for (i in 1:10) {
+  if (i < 3) 
+    next
+
+  print(i)
+  
+  if (i >= 5)
+    break
+}
+
+
+
+```
+
+*while (cond)* statement
+
+```{r}
+i <- 10 
+while (i > 0) {print(c(i,"Hello")); i <- i - 1} 
+
+```
+
+# Tidyverse
+
+```{r message=FALSE,warning=FALSE}
+
+# install.packages('tidyverse',repos = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")
+```
+
+## dplyr        
+Pick observations by their values (filter()).          
+Reorder the rows (arrange()).       
+Pick variables by their names (select()).       
+Create new variables with functions of existing variables (mutate()).       
+Collapse many values down to a single summary (summarise()).          
+These all combine naturally with group_by() which allows you to perform any operation “by group”.           
+
+```{r results='hide',warning=FALSE}
+#  select all flights on January 1st
+library(nycflights13)
+library(dplyr)
+filter(flights, month == 1, day == 1)
+
+# if you want to save the result, you’ll need to use the assignment operator, <-:
+jan1 <- filter(flights, month == 1, day == 1)
+
+# R either prints out the results, or saves them to a variable. If you want to do both, you can wrap the assignment in parentheses:
+(dec25 <- filter(flights, month == 12, day == 25))
+
+### Comparisons
+# To use filtering effectively, you have to know how to select the observations that you want using the comparison operators.
+# R provides the standard suite: >, >=, <, <=, != (not equal), and == (equal).
+# 
+# When you’re starting out with R, the easiest mistake to make is to use = instead of == when testing for equality. When this happens you’ll get an informative error:
+
+# filter(flights, month = 1)
+
+###  Logical operators
+# & is “and”, | is “or”, and ! is “not”. 
+# The following code finds all flights that departed in November or December:
+
+filter(flights, month == 11 | month == 12)
+
+# A useful short-hand for this problem is x %in% y. 
+
+nov_dec <- filter(flights, month %in% c(11, 12))
+
+# if you wanted to find flights that weren’t delayed (on arrival or departure) by more than two hours, you could use either of the following two filters:
+
+filter(flights, !(arr_delay > 120 | dep_delay > 120))
+filter(flights, arr_delay <= 120, dep_delay <= 120)
+
+# As well as & and |, R also has && and ||. Don’t use them here! You’ll learn when you should use them in conditional execution.
+```
+如何获取函数源代码
+```{r results='hide'}
+?mean()
+methods(mean) #泛型函数
+getAnywhere(mean.default)
+```
+
+### 缺失值
+
+```{r results='hide' }
+# One important feature of R that can make comparison tricky are missing values, or NAs (“not availables”). 
+# NA represents an unknown value so missing values are “contagious”.
+
+NA > 5
+
+10 == NA
+
+NA + 10
+
+NA / 2
+NA == NA
+
+# If you want to determine if a value is missing, use is.na():
+x <- NA
+is.na(x)
+
+# filter() only includes rows where the condition is TRUE; it excludes both FALSE and NA values. If you want to preserve missing values, ask for them explicitly:
+
+df <- tibble(x = c(1, NA, 3))
+filter(df, x > 1)
+
+filter(df, is.na(x) | x > 1)
+
+# arrange() works similarly to filter() except that instead of selecting rows, it changes their order.
+arrange(flights, year, month, day)
+
+# Use desc() to re-order by a column in descending order:
+arrange(flights, desc(dep_delay))
+
+select(flights, year, month, day)
+# Select all columns between year and day (inclusive)
+select(flights, year:day)
+# Select all columns except those from year to day (inclusive)
+select(flights, -(year:day))
+
+# There are a number of helper functions you can use within select():
+# 
+# starts_with("abc"): matches names that begin with “abc”.
+# 
+# ends_with("xyz"): matches names that end with “xyz”.
+# 
+# contains("ijk"): matches names that contain “ijk”.
+# 
+# matches("(.)\\1"): selects variables that match a regular expression. This one matches any variables that contain repeated characters. You’ll learn more about regular expressions in strings.
+# 正则表达式
+# num_range("x", 1:3): matches x1, x2 and x3
+
+rename(flights, tail_num = tailnum)
+# rename() changes the names of individual variables using new_name = old_name syntax
+?rename
+# mutate() always adds new columns at the end of your dataset
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  speed = distance / air_time * 60
+)
+flights_sml
+# If you only want to keep the new variables, use transmute()
+transmute(flights,
+  gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+
+# lead() and lag() allow you to refer to leading or lagging values. 
+
+(x <- 1:10)
+#>  [1]  1  2  3  4  5  6  7  8  9 10
+lag(x)
+#>  [1] NA  1  2  3  4  5  6  7  8  9
+lead(x)
+#  It collapses a data frame to a single row:
+
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+
+
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+
+
+```
+
+
+## 管道连接符Pipe
+```{r results='hide',warning=FALSE}
+library(magrittr)
+
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+ not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(
+    delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  )
+ 
+
+starwars %>% 
+  filter(species == "Droid")
+
+starwars %>% 
+  select(name, ends_with("color"))
+
+starwars %>% 
+  mutate(name, bmi = mass / ((height / 100)  ^ 2)) %>%
+  select(name:mass, bmi)
+
+
+starwars %>% 
+  arrange(desc(mass))
+
+
+starwars %>%
+  group_by(species) %>%
+  summarise(
+    n = n(),
+    mass = mean(mass, na.rm = TRUE)
+  ) %>%
+  filter(
+    n > 1,
+    mass > 50
+  )
+
+```
+### 实战
+教材第三章美食例题
+```{r eval=FALSE, results='hide',eval=FALSE}
+# 题目1
+# 原始数据在学习通
+# 1.读取“餐馆信息.csv”；
+# 2.读取“美食评分数据.csv”；
+# 3.合并两个文件；
+# 4.筛选地理位置在'北太平庄','五道口'的记录
+# 5.按地理位置分类汇总，得到美食评分的平均值、方差和餐馆数量
+
+# 题目2
+# 登录你的cfps账户，下载2020年的家庭关系数据集“cfps2020famconf_202306.sas7bdat”；
+# 从rstudio读取该文件，所有变量名小写；
+# 该数据集有多少行？多少列？
+# 识别有多少个家庭
+# 识别有多少个成年个体（18岁以上）
+# 新建标签文件
+# 选择个体的id,性别，年龄，婚姻状况，受教育程度，职业和年收入。
+# 用mice包考察新数据集的数据缺失情况。
+
+# 题目3
+# 注册你的cgss账户，从网站下载2021年的Stata原始数据；
+# 从rstudio读取该文件；
+# 新建标签文件
+# 该数据集有多少行？多少列？
+# 提取前10列，前1000行；
+# 考察新数据集的数据缺失情况。
+
+```
+
+
+## 探索性数据分析
+
+```{r eval=FALSE,results='hide',eval=FALSE}
+# 缺失值
+library(mice)
+head(df)
+md.pattern(df)
+df[!complete.cases(df),] #filter observation with missing value
+(df_new <- df[complete.cases(df),]) #filter observation without missing value
+
+my_df <- df %>% 
+  mutate(taste = if_else(is.na(taste), mean(taste,na.rm = T), taste),
+         environment = if_else(is.na(environment), mean(environment,na.rm = T),  environment),
+         service   = if_else(is.na(service), mean(service,na.rm = T), service)  ) 
+
+md.pattern(my_df)
+
+# 五数概况(极端值)
+
+summary(df[,-c(1:3)])
+plot(log(df$cost_avg))
+
+
+```
+### 寻找“人气”餐馆
+赢得食客评论数目最多的前10%的餐馆。
+```{r eval=FALSE,eval=FALSE}
+
+MyData<-read.table(file="C:\\Users\\hp\\Downloads\\美食餐馆食客评分数据.txt",
+                   header=TRUE,sep=" ",stringsAsFactors=FALSE)
+head(MyData)
+(flag <- quantile(MyData$review_n,c(0.25,0.5,0.75,0.9)))
+
+score_new <- MyData %>% mutate( heat = case_when(
+  review_n < flag[1] ~ "1",
+  review_n >=  flag[1] & review_n < flag[2] ~ "2",
+  review_n >=  flag[2] & review_n < flag[3] ~ "3",
+  review_n >=  flag[3] & review_n < flag[4] ~ "4",
+  review_n >=  flag[4] ~ "5"
+)
+)
+score_new %>% select(heat) %>% table()
+
+```
+### 超市顾客购买行为数据的RFM计算
+
+```{r eval=F}
+
+MyData<-read.table("C:\\Users\\hp\\Downloads\\顾客交易数据.txt",
+                   header=TRUE,sep=",")
+head(MyData)
+
+
+mydata <- MyData %>% group_by(CardID) %>% summarise(cons_date = Sys.Date() - as.Date(substr(as.character(max(Date)),3,8),format = "%y%m%d"),
+                                          cons_num = n(),
+                                          cons_amount = sum(Amount))
+head(mydata)
+
+
+```
+### 北京市空气质量检测数据的整理        
+
+```{r eval=FALSE,eval=FALSE}
+# 文件合并
+# 计算每天的各污染物平均浓度
+
+setwd('C:\\Users\\hp\\Downloads\\空气质量监测部分原始数据')
+
+library(readr)
+
+list_of_files <- list.files(path = "C:\\Users\\hp\\Downloads\\空气质量监测部分原始数据",
+                            recursive = TRUE,
+                            pattern = "\\.csv$",
+                            full.names = TRUE)
+
+df <- readr::read_csv(list_of_files, id = "file_name")
+df %>% head()
+df_new <- df %>% group_by(date,type) %>% summarise_at(-c(1:4), mean, na.rm = TRUE)
+dim(df_new)
+head(df_new)
+
+
+
+```
+
+# 3.绘图    
+
+从统计公报说起：图和表是最实用的。    
+
+## 3.1 R base  
+参考教材：Robert I.Kabacoff.R语言实战(第二版).人民邮电出版社，2016 
+
+Robert I.Kabacoff.R语言实战(第二版).人民邮电出版社，2016 
+Robert I.Kabacoff.R in Action, Third Edition.Manning,2022
+
+代码下载：https://github.com/Rkabacoff/RiA3
+
+
+有两类绘图软件；高级命令和低级命令。        
+高级命令，高级命令可以独立绘图，比如plot，barplot,boxplot;
+低级命令需要在高级命令，比如lines，points的基础上绘图。           
+
+```{r warning=FALSE,message=FALSE}
+# 1.XY散点图
+# x和y都是连续型
+dev.new()
+dose <- c(20, 30, 40, 45, 60) 
+drugA <- c(16, 20, 27, 40, 60) 
+drugB <- c(15, 18, 25, 31, 40) 
+
+plot(dose, drugA, type="b")  
+
+# 使用图形参数控制图形外观
+opar <- par(no.readonly=TRUE) 
+par(pin=c(2, 3)) 
+par(lwd=2, cex=1.5) 
+par(cex.axis=.75, font.axis=3) 
+plot(dose, drugA, type="b", pch=19, lty=2, col="red") 
+plot(dose, drugB, type="b", pch=23, lty=6, col="blue", bg="green") 
+par(opar) 
+
+# 添加文本、自定义坐标轴和图例
+plot(dose, drugA, type="b", 
+ col="red", lty=2, pch=2, lwd=2, 
+ main="Clinical Trials for Drug A", 
+ sub="This is hypothetical data", 
+ xlab="Dosage", ylab="Drug Response", 
+ xlim=c(0, 60), ylim=c(0, 70)) 
+
+# 2.barplot
+# 单变量图
+# 展示类别型变量的分布
+ library(vcd) 
+ counts <- table(Arthritis$Improved) 
+ counts 
+ 
+# vertical barplot
+barplot(counts, 
+        main="Simple Bar Plot",
+        xlab="Improvement", ylab="Frequency")
+# horizontal bar plot   
+barplot(counts, 
+        main="Horizontal Bar Plot", 
+        xlab="Frequency", ylab="Improvement", 
+        horiz=TRUE)
+
+
+# Stacked and grouped bar plots 
+# stacked barplot
+barplot(counts, 
+        main="Stacked Bar Plot",
+        xlab="Treatment", ylab="Frequency", 
+        col=c("red", "yellow","green")) 
+legend('topright', legend=rownames(counts),
+       col=1:2, pch=16, cex=.5)
+
+# grouped barplot                       
+barplot(counts, 
+        main="Grouped Bar Plot", 
+        xlab="Treatment", ylab="Frequency",
+        col=c("red", "yellow", "green"),
+        args.legend = list(x = "topleft"),
+        beside=TRUE)
+legend('topright', legend=rownames(counts),
+       col=1:2, pch=16, cex=.5)
+# 3.Pie charts
+par(mfrow=c(2,2))                             
+slices <- c(10, 12,4, 16, 8) 
+lbls <- c("US", "UK", "Australia", "Germany", "France")
+
+pie(slices, labels = lbls, 
+    main="Simple Pie Chart")
+
+pct <- round(slices/sum(slices)*100)                      
+lbls <- paste(lbls, pct) 
+lbls <- paste(lbls,"%",sep="")
+pie(slices,labels = lbls, col=rainbow(length(lbls)),
+    main="Pie Chart with Percentages")
+
+library(plotrix)                                               
+pie3D(slices, labels=lbls,explode=0.1,
+      main="3D Pie Chart ")
+
+mytable <- table(state.region)                                   
+lbls <- paste(names(mytable), "\n", mytable, sep="")
+pie(mytable, labels = lbls, 
+    main="Pie Chart from a dataframe\n (with sample sizes)")
+
+par(opar)
+
+
+# 4.Fan plots
+library(plotrix)
+slices <- c(10, 12,4, 16, 8) 
+lbls <- c("US", "UK", "Australia", "Germany", "France")   
+fan.plot(slices, labels = lbls, main="Fan Plot")
+
+# 5.Histograms直方图
+# 展示连续型变量的分布
+# simple histogram                                                        1
+hist(mtcars$mpg)
+
+# colored histogram with specified number of bins        
+hist(mtcars$mpg, 
+     breaks=12, 
+     col="red", 
+     xlab="Miles Per Gallon", 
+     main="Colored histogram with 12 bins")
+
+# colored histogram with rug plot, frame, and specified number of bins 
+hist(mtcars$mpg, 
+     freq=FALSE, 
+     breaks=12, 
+     col="red", 
+     xlab="Miles Per Gallon", 
+     main="Histogram, rug plot, density curve")  
+rug(jitter(mtcars$mpg)) 
+lines(density(mtcars$mpg), col="blue", lwd=2)
+
+# histogram with superimposed normal curve (Thanks to Peter Dalgaard)  
+x <- mtcars$mpg 
+h<-hist(x, 
+        breaks=12, 
+        col="red", 
+        xlab="Miles Per Gallon", 
+        main="Histogram with normal curve and box") 
+xfit<-seq(min(x),max(x),length=40) 
+yfit<-dnorm(xfit,mean=mean(x),sd=sd(x)) 
+yfit <- yfit*diff(h$mids[1:2])*length(x) 
+lines(xfit, yfit, col="blue", lwd=2)
+box()
+
+# 6.核密度图
+# Kernel density plot
+d <- density(mtcars$mpg) # returns the density data  
+plot(d) # plots the results 
+
+d <- density(mtcars$mpg)                                  
+plot(d, main="Kernel Density of Miles Per Gallon")       
+polygon(d, col="red", border="blue")                     
+rug(mtcars$mpg, col="brown") 
+
+
+# Comparing kernel density plots
+par(lwd=2)                                                       
+library(sm)
+attach(mtcars)
+
+# create value labels 
+cyl.f <- factor(cyl, levels= c(4, 6, 8),                               
+                labels = c("4 cylinder", "6 cylinder", "8 cylinder")) 
+
+# plot densities 
+sm.density.compare(mpg, cyl, xlab="Miles Per Gallon")                
+title(main="MPG Distribution by Car Cylinders")
+
+# add legend via mouse click
+colfill<-c(2:(2+length(levels(cyl.f)))) 
+cat("Use mouse to place legend...","\n\n")
+legend(locator(1), levels(cyl.f), fill=colfill) 
+detach(mtcars)
+par(lwd=1)
+
+# 7.箱线图
+# 双变量图，y是连续型，x是类别型变量
+# parallel box plots
+boxplot(mpg~cyl,data=mtcars,
+        main="Car Milage Data", 
+        xlab="Number of Cylinders", 
+        ylab="Miles Per Gallon")
+
+
+# notched box plots
+boxplot(mpg~cyl,data=mtcars, 
+        notch=TRUE, 
+        varwidth=TRUE,
+        col="red",
+        main="Car Mileage Data", 
+        xlab="Number of Cylinders", 
+        ylab="Miles Per Gallon")
+
+
+# Box plots for two crossed factors
+# create a factor for number of cylinders
+mtcars$cyl.f <- factor(mtcars$cyl,
+                       levels=c(4,6,8),
+                       labels=c("4","6","8"))
+
+# create a factor for transmission type
+mtcars$am.f <- factor(mtcars$am, 
+                      levels=c(0,1), 
+                      labels=c("auto","standard"))
+
+# generate boxplot
+boxplot(mpg ~ am.f *cyl.f, 
+        data=mtcars, 
+        varwidth=TRUE,
+        col=c("gold", "darkgreen"),
+        main="MPG Distribution by Auto Type", 
+        xlab="Auto Type")
+
+
+# Listing 6.10 - Violin plots
+
+library(vioplot)
+x1 <- mtcars$mpg[mtcars$cyl==4] 
+x2 <- mtcars$mpg[mtcars$cyl==6]
+x3 <- mtcars$mpg[mtcars$cyl==8]
+vioplot(x1, x2, x3, 
+        names=c("4 cyl", "6 cyl", "8 cyl"), 
+        col="gold")
+title("Violin Plots of Miles Per Gallon")
+
+
+# dot chart
+dotchart(mtcars$mpg,labels=row.names(mtcars),cex=.7,
+         main="Gas Mileage for Car Models", 
+         xlab="Miles Per Gallon")
+
+
+# Listing 6.11 - Dot plot grouped, sorted, and colored
+x <- mtcars[order(mtcars$mpg),]                      
+x$cyl <- factor(x$cyl)                                 
+x$color[x$cyl==4] <- "red"                              
+x$color[x$cyl==6] <- "blue"
+x$color[x$cyl==8] <- "darkgreen" 
+dotchart(x$mpg,
+         labels = row.names(x),                               
+         cex=.7, 
+         pch=19,                                              
+         groups = x$cyl,                                       
+         gcolor = "black",
+         color = x$color,
+         main = "Gas Mileage for Car Models\ngrouped by cylinder",
+         xlab = "Miles Per Gallon")
+
+```
+## 3.2 ggplot2  
+
+ggplot2是严格按照分层语法设计的。
+
+参考教材：Hadley Wichham. ggplot2: elegant graphics for data analysis.URL:https://ggplot2-book.org/
+
+张杰.R语言数据可视化之美-专业图表绘制指南. 电子工业出版社，2019
+
+```{r  warning=FALSE,message=FALSE}
+# install.packages(c("ggplot2", "vcd", "dplyr", "treemapify", "scales"))# 
+
+# Listing 6.1 Simple bar charts
+library(ggplot2)
+data(Arthritis, package="vcd")
+ggplot(Arthritis, aes(x=Improved, fill=Improved)) + geom_bar() +
+  labs(title="Simple Bar chart",                 
+       x="Improvement",                          
+       y="Frequency")                            
+
+ggplot(Arthritis, aes(x=Improved)) + geom_bar() +
+  labs(title="Horizontal Bar chart",             
+       x="Improvement",                          
+       y="Frequency") +                          
+  coord_flip()                                   
+
+# Listing 6.2 Stacked, grouped, and filled bar charts
+ggplot(Arthritis, aes(x=Treatment, fill=Improved)) +
+  geom_bar(position = "stack") +  
+  labs(title="Stacked Bar chart",                   
+       x="Treatment",                               
+       y="Frequency")                               
+
+ggplot(Arthritis, aes(x=Treatment, fill=Improved)) +
+  geom_bar(position = "dodge") + 
+  labs(title="Grouped Bar chart",                   
+       x="Treatment",                               
+       y="Frequency")                               
+
+ggplot(Arthritis, aes(x=Treatment, fill=Improved)) +
+  geom_bar(position = "fill") +  
+  labs(title="Filled Bar chart",                   
+       x="Treatment",                               
+       y="Proportion") 
+
+# Listing 6.3 Bar chart for sorted mean values
+states <- data.frame(state.region, state.x77)    
+
+library(dplyr)                 
+plotdata <- states %>% 
+group_by(state.region) %>%
+summarize(mean = mean(Illiteracy))
+plotdata
+
+ggplot(plotdata, aes(x=reorder(state.region, mean), y=mean)) + 
+  geom_bar(stat="identity") +
+  labs(x="Region",
+  y="",
+  title = "Mean Illiteracy Rate")
+
+# Listing 6.4 Bar chart of mean values with error bars
+plotdata <- states %>%
+group_by(state.region) %>%
+summarize(n=n(), 
+          mean = mean(Illiteracy),                      
+          se = sd(Illiteracy)/sqrt(n))                  
+
+plotdata
+
+ggplot(plotdata, aes(x=reorder(state.region, mean), y=mean)) +
+geom_bar(stat="identity", fill="skyblue") +
+geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.2) +
+labs(x="Region",
+     y="",
+     title = "Mean Illiteracy Rate",
+     subtitle = "with standard error bars")
+
+# Figure 6.5 Bar chart
+data(Arthritis, package="vcd")
+ggplot(Arthritis, aes(x=Improved)) + 
+  geom_bar(fill="gold", color="black") +
+  labs(title="Treatment Outcome") 
+
+# Bar chart labels
+ggplot(mpg, aes(x=model)) + 
+  geom_bar() +
+  labs(title="Car models in the mpg dataset", 
+       y="Frequency", x="") 
+
+ggplot(mpg, aes(x=model)) + 
+  geom_bar() +
+  labs(title="Car models in the mpg dataset", 
+       y="Frequency", x="") +
+  coord_flip() 
+
+ggplot(mpg, aes(x=model)) + 
+  geom_bar() +
+  labs(title="Model names in the mpg dataset", 
+       y="Frequency", x="") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=8)) 
+
+
+# Pie charts
+if(!require(remotes)) install.packages("remotes")
+   devtools::install_github("rkabacoff/ggpie")
+
+library(ggplot2)
+library(ggpie)
+ggpie(mpg, class)
+
+ggpie(mpg, class, legend=FALSE, offset=1.3, 
+      title="Automobiles by Car Class")
+
+ggpie(mpg, class, year, 
+      legend=FALSE, offset=1.3, title="Car Class by Year")
+
+# Listing 6.6 Simple Tree Map
+library(ggplot2)
+library(dplyr)
+library(treemapify)
+
+plotdata <- mpg %>% count(manufacturer)
+
+ggplot(plotdata,
+       aes(fill = manufacturer,
+           area = n,
+           label = manufacturer)) +
+  geom_treemap() +
+  geom_treemap_text() +
+  theme(legend.position = "none")
+
+# Listing 6.7 Tree Map with Subgrouping
+plotdata <- mpg %>%  
+  count(manufacturer, drv)
+plotdata$drv <- factor(plotdata$drv, 
+                       levels=c("4", "f", "r"),
+                       labels=c("4-wheel", "front-wheel", "rear"))
+
+ggplot(plotdata,
+       aes(fill = manufacturer, 
+           area = n,
+           label = manufacturer,
+           subgroup=drv)) +
+  geom_treemap() + 
+  geom_treemap_subgroup_border() +
+  geom_treemap_subgroup_text(
+    place = "middle",
+    colour = "black",
+    alpha = 0.5,
+    grow = FALSE) +
+  geom_treemap_text(colour = "white", 
+                    place = "centre",
+                    grow=FALSE) +
+  theme(legend.position = "none")
+
+# Listing 6.8 Histograms
+library(ggplot2)
+library(scales)
+
+data(mpg)
+cars2008 <- mpg[mpg$year == 2008, ]
+
+ggplot(cars2008, aes(x=hwy)) + 
+  geom_histogram() +
+  labs(title="Default histogram")
+
+ggplot(cars2008, aes(x=hwy)) + 
+  geom_histogram(bins=20, color="white", fill="steelblue") +
+  labs(title="Colored histogram with 20 bins",
+       x="Highway Miles Per Gallon",
+       y="Frequency")
+
+ggplot(cars2008, aes(x=hwy, y=..density..)) + 
+  geom_histogram(bins=20, color="white", fill="steelblue") +
+  scale_y_continuous(labels=scales::percent) +
+  labs(title="Histogram with percentages",
+       y= "Percent",
+       x="Highway Miles Per Gallon")
+
+ggplot(cars2008, aes(x=hwy, y=..density..)) +
+  geom_histogram(bins=20, color="white", fill="steelblue") + 
+  scale_y_continuous(labels=scales::percent) +
+  geom_density(color="red", size=1) +
+  labs(title="Histogram with density curve",
+       y="Percent" ,
+       x="Highway Miles Per Gallon")
+
+# Listing 6.9 Kernel density plots
+data(mpg, package="ggplot2")
+cars2008 <- mpg[mpg$year == 2008, ]
+
+ggplot(cars2008, aes(x=cty)) + 
+  geom_density() + 
+  labs(title="Default kernel density plot") 
+
+ggplot(cars2008, aes(x=cty)) + 
+  geom_density(fill="red") + 
+  labs(title="Filled kernel density plot")
+
+bw.nrd0(cars2008$cty)
+
+ggplot(cars2008, aes(x=cty)) + 
+  geom_density(fill="red", bw=.5) +
+  labs(title="Kernel density plot with bw=0.5")
+
+# Listing 6.10 Comparative kernel density plots
+data(mpg, package="ggplot2")
+cars2008 <- mpg[mpg$year == 2008 & mpg$cyl != 5,]
+cars2008$Cylinders <- factor(cars2008$cyl)
+
+ggplot(cars2008, aes(x=cty, color=Cylinders, linetype=Cylinders)) +
+  geom_density(size=1)  +
+  labs(title="Fuel Efficiecy by Number of Cylinders",
+       x = "City Miles per Gallon")
+
+ggplot(cars2008, aes(x=cty, fill=Cylinders)) + 
+  geom_density(alpha=.4) +
+  labs(title="Fuel Efficiecy by Number of Cylinders",
+       x = "City Miles per Gallon")
+
+# Box plots
+ggplot(mtcars, aes(x="", y=mpg)) +
+  geom_boxplot() +
+  labs(y = "Miles Per Gallon", x="", title="Box Plot")
+
+cars <- mpg[mpg$cyl != 5, ]
+cars$Cylinders <- factor(cars$cyl)
+cars$Year <- factor(cars$year)
+ggplot(cars, aes(x=Cylinders, y=cty)) + 
+  geom_boxplot() +
+  labs(x="Number of Cylinders", 
+       y="Miles Per Gallon", 
+       title="Car Mileage Data")
+
+ggplot(cars, aes(x=Cylinders, y=cty)) + 
+  geom_boxplot(notch=TRUE, 
+               fill="steelblue",
+               varwidth=TRUE) +
+  labs(x="Number of Cylinders", 
+       y="Miles Per Gallon", 
+       title="Car Mileage Data")
+
+ggplot(cars, aes(x=Cylinders, y=cty, fill=Year)) +           
+  geom_boxplot() +                                           
+  labs(x="Number of Cylinders",                              
+       y="Miles Per Gallon",                                 
+       title="City Mileage by # Cylinders and Year") +    
+  scale_fill_manual(values=c("gold", "green"))      
+
+# Listing 6.11 Violin plots
+cars <- mpg[mpg$cyl != 5, ]
+cars$Cylinders <- factor(cars$cyl)
+
+ggplot(cars, aes(x=Cylinders, y=cty)) + 
+  geom_boxplot(width=0.2, 
+               fill="green") +
+  geom_violin(fill="gold", 
+              alpha=0.3) +
+  labs(x="Number of Cylinders", 
+       y="City Miles Per Gallon", 
+       title="Violin Plots of Miles Per Gallon")
+
+# Dot plots
+plotdata <- mpg %>%
+  filter(year == "2008") %>%
+  group_by(model) %>%
+  summarize(meanHwy=mean(hwy))
+plotdata
+
+ggplot(plotdata, aes(x=meanHwy, y=model)) + 
+  geom_point() +
+  labs(x="Miles Per Gallon", 
+       y="", 
+       title="Gas Mileage for Car Models")
+
+ggplot(plotdata, aes(x=meanHwy, y=reorder(model, meanHwy))) + 
+  geom_point() +
+  labs(x="Miles Per Gallon", 
+       y="", 
+       title="Gas Mileage for Car Models",
+       subtitle = "with standard error bars")
+
+```
+
+### filter for complete cases in data.frame using dplyr   
+```{r}
+
+mtcars %>% na.omit
+
+mtcars %>% filter(complete.cases(.))
+
+library(tidyr)
+mtcars %>% drop_na
+
+# If you want to filter based on one variable's missingness, use a conditional:
+
+mtcars %>% filter(!is.na(cyl))
+
+
+mtcars %>% drop_na(cyl)
+
+```
+
+
+
+##第四章习题
+
+```{r eval = FALSE,eval=FALSE}
+
+library(dplyr);library(ggplot2);library(magrittr);library(tidyr)
+# example 1 
+setwd('C:\\Users\\hp\\Downloads')
+air <- read.table(file="空气质量.txt",header=TRUE,sep=" ")
+
+df <- air %>% filter(date<=20160315|date>=20161115) %>% na.omit(.)
+
+ggplot(df,aes(PM2.5)) + 
+  geom_histogram(aes(y = after_stat(density)),colour="black", fill="white") + 
+  geom_density(color = 'red',size=1 ) + labs(x = "PM2.5浓度", y = "密度",title="2016年北京供暖季PM2.5浓度直方图") 
+
+
+ggplot(df,aes(PM2.5)) + geom_boxplot() + labs(x = "PM2.5浓度",
+                                              title ="2016年北京供暖季PM2.5箱线图" ) 
+
+ggplot(df, aes(x = PM2.5, y = SiteName)) +  geom_point() + 
+  labs(x = "PM2.5浓度",y='观测编号',title="2016年北京供暖季PM2.5克利夫兰点图") 
+
+# example 2 
+
+
+review <- read.table(file="美食餐馆食客评分数据.txt", header=TRUE,sep=" ")
+names(review)
+
+ggplot(review, aes(food_type)) +  # Plot with values on top
+  geom_bar(fill="white") + geom_text(aes(label=..count..),stat = 'count')+
+  labs(x="主打菜",y="餐馆数") + ggtitle("主打菜分布柱形图")+ ylim(0,170)
+
+# example 3
+ggplot(review,aes(score_avg)) + 
+  geom_histogram(aes(y=after_stat(density)),
+                 colour="black",fill="white",bins = 10) + geom_density()
+
+
+df <- review %>% select(taste,environment,service) %>% reshape::melt()
+head(df)
+table(df$variable)
+ggplot(df,aes(x = value,colour = variable)) + geom_density()
+
+ggplot(review,aes( x = food_type,y = score_avg)) + geom_boxplot() + 
+  labs(y = "平均打分",title ="不同主打菜平均打分的箱线图" ) 
+
+
+
+ggplot(review,aes(x = region, y = score_avg)) + geom_violin(fill='red') + 
+  labs(y = "平均打分",title ="平均打分的小提琴图" ) 
+
+
+```
+
+### 导入数据函数
+
+读取格式化记事本read.table,注意分隔符sep选择“ ”，如果第一行是变量名，header=T；
+读取csv文件read.csv,注意分隔符sep选择“,”.
+
+读取统计三大软件（SAS,SPSS AND STATA）的文件，推荐用haven包的命令，比R Base的自带命令更快。       
+read_dta:	Read Stata DTA files
+read_por:	Read SPSS files
+read_sas:	Read SAS files
+read_sav:	Read SPSS files
+read_spss: Read SPSS files
+read_stata:	Read Stata DTA files
+read_xpt:	Read SAS transport files
+
+## 3.3 案例   
+
+中国健康与养老追踪调查（China Health and Retirement Longitudinal Survey, CHARLS）是由北京大学国家发展研究院主持、北京大学中国社会科学调查中心与北京大学团委共同执行的大型跨学科调查项目，是国家自然科学基金委资助的重大项目，旨在收集一套代表中国45岁及以上中老年人家庭和个人的高质量微观数据，用以分析我国人口老龄化问题，推动老龄化问题的跨学科研究，为制定和完善我国相关政策提供更加科学的基础。
+
+CHARLS曾于2008年在分别代表我国东西部典型国情的浙江、甘肃两省开展预调查；全国基线调查于2011年开展，于2011、2013、2015和2018年分别在全国28个省（自治区、直辖市）的150个县、450个社区（村）开展调查访问，至2018年全国追访完成时，其样本已覆盖总计1.24万户家庭中的1.9万名受访者。
+
+CHALRS的问卷设计参考了国际经验，包括美国健康与退休调查（HRS）、英国老年追踪调查（ELSA）以及欧洲的健康、老年与退休调查（SHARE）等。项目采用了多阶段抽样，在县/区和村居抽样阶段均采取PPS抽样方法。CHARLS首创了电子绘图软件（CHALRS-GIS）技术，用地图法制作村级抽样框。
+
+CHARLS问卷内容包括：个人基本信息，家庭结构和经济支持，健康状况，体格测量，医疗服务利用和医疗保险，工作、退休和养老金、收入、消费、资产，以及社区基本情况等。
+
+CHARLS的访问应答率和数据质量在世界同类项目中位居前列，数据在学术界得到了广泛的应用和认可。
+
+数据问卷下载地址：https://charls.charlsdata.com/pages/data/111/zh-cn.html.
+
+我们要做的是：
+1.2011、2013、2015和2018年的数据集按年份合并成4个数据集；
+
+思路：合并是非常常见的操作。一般合并的文件格式相同。这种情况下有两种情形：    
+字段相同。参考薛薇教材第三章最后一个案例：北京污染物。
+字段不同，每两个文件至少有一个key相同。比如在charls数据框2011年的文件夹里
+有3种key：个体c("ID","householdID", "communityID")，家庭c("householdID", "communityID")
+，社区c( "communityID")。
+
+1.1 用setwd设置目标文件夹为工作文件夹
+1.2 读取工作文件夹下的文件名，保存为列表，文件名为list_files
+1.3 批量读取list_files的dta文件。用lapply进行批量操作，haven包的read_dta读取dta文件。
+1.4 读取的批量dta文件是一个由tibble组成的列表。统计列表里有多少个tibble。
+1.5 筛选所有tibble的共同变量，即key。
+1.6 统计key的频率分布。
+1.7 合并所有的tibble为一个tibble。
+
+
+```{r eval = FALSE}
+
+rm(list=ls())
+# 1.1 用setwd设置目标文件夹为工作文件夹
+setwd('C:\\Users\\hp\\Downloads\\2011')
+
+# 1.2 读取工作文件夹下的文件名，保存为列表，文件名为list_files
+(list_files <- list.files())
+
+# 1.3 批量读取list_files的dta文件。用lapply进行批量操作，haven包的read_dta读取dta文件。
+df <- lapply(list_files,haven::read_dta)
+
+# 1.4 读取的批量dta文件是一个由tibble组成的列表。统计列表里有多少个tibble。
+typeof(df)
+library(magrittr)
+df[[15]] %>% head()
+length(df)
+
+# 1.5 筛选所有tibble的共同变量，即key。
+
+
+myfunc <- function(x) table(names(x) %in% 
+                                         c("ID","householdID", "communityID"))[2]
+lapply(df,myfunc)
+
+# 1.6 统计key的频率分布。
+table(as.numeric(lapply(df,myfunc)))
+
+# 1.7 合并所有的tibble为一个tibble。
+
+myfun2 <- function(df1,df2) merge(df1,df2,by = intersect(names(df1),names(df2)))
+dat2011 <- Reduce(myfun2,df)
+dim(dat2011)
+
+
+rm(list=ls())
+library(dplyr);library(purrr)
+key <- c("ID","householdID","communityID")
+
+myfun2 <- function(df1,df2) merge(df1,df2,
+                                  by = list(names(df1),names(df2),key) %>% 
+                                    reduce(intersect) )
+
+myfunc <- function(x){
+path <- paste0('C:\\Users\\hp\\Downloads\\',x)
+setwd(path)
+df <- lapply(list.files(path,pattern='.dta'), haven::read_dta)
+df %>% reduce(myfun2)
+}
+
+myfunc('CHARLS2011')
+
+# 1.8 重复使用df的前三个tibble合并，用自定义函数结合Reduce批量合并，验证1.7的操作是否正确
+# 1.9 重复使用df的前三个tibble合并，用自定义函数结合Reduce批量合并，验证1.7的操作是否正确
+temp <- Reduce(myfun2,list(df[[1]],df[[2]],df[[3]]))
+dim(temp)
+
+temp12 <- merge(df[[1]],df[[2]],by=intersect(names(df[[1]]),names(df[[2]])))
+
+temp123 <- merge(temp12,df[[3]],by=intersect(names(temp12),names(df[[3]])))
+dim(temp123)
+
+# 1.10.根据1.1-1.8操作，新建一个函数，可以合并一个文件夹里的所有dta文件。将这个文件应用于2011，2013,2015和2018年的charls数据合并，生成四个数据集，文件名未data11,data13,dat15,dat18.
+
+# 1.11. 合并这四个文件成为一个面板数据。
+
+
+```
+
+### 批量操作利器：泛函        
+
+避免使用循环的方法是使用泛函
+常用的函数是：R base的apply函数族，Reduce函数，do.call函数；
+tidyverse的reduce函数和purrr包的map函数。 
+
+#### apply函数族
+
+apply函数族：apply()函数，lapply()函数，sapply()函数，tapply()函数
+
+apply函数基础，lapply是它的变种，sapply是lapply的精华简洁版本。   
+
+apply的输出形式不确定，因此在函数中要慎用。
+apply的格式：
+apply(X, MARGIN, FUN, ..., simplify = TRUE)
+
+X: an array, including a matrix.
+MARGIN:1 indicates rows, 2 indicates columns, c(1, 2) indicates rows and columns. 
+FUN: the function to be applied. In the case of functions like +, %*%, etc., the function name must be backquoted or quoted.
+
+
+lapply的特殊之处在于，它的输出形式为列表（list），并且每一个运算结果（数值）都是一个单独的列表。  
+
+sapply函数运算方法与lapply完全相同，唯一的区别是sapply输出形式并不是列表（list），而是“数值”。
+
+vapply可以指定输出。
+
+
+```{r}
+(mymat <- matrix(c(1:9),nrow=3))
+
+apply(mymat,1,sum)
+
+typeof(lapply(list(mymat),sum))
+
+typeof(sapply(list(mymat),sum))
+
+
+x <- list(a = 1:10, beta = exp(-3:3), logic = c(TRUE,FALSE,FALSE,TRUE))
+# compute the list mean for each list element
+lapply(x, mean)
+# median and quartiles for each list element
+lapply(x, quantile, probs = 1:3/4)
+sapply(x, quantile)
+
+(i39 <- sapply(3:9, seq)) # list of vectors
+sapply(i39, fivenum)
+
+ v <- list(A=letters[1:4],B=letters[5:8])
+# 默认简化
+ sapply(v, paste, "-lucky")
+#      A          B         
+# [1,] "a -lucky" "e -lucky"
+# [2,] "b -lucky" "f -lucky"
+# [3,] "c -lucky" "g -lucky"
+# [4,] "d -lucky" "h -lucky"
+# 不简化
+ sapply(v, paste, "-lucky", simplify = F)
+# $A
+# [1] "a -lucky" "b -lucky" "c -lucky" "d -lucky"
+# 
+# $B
+# [1] "e -lucky" "f -lucky" "g -lucky" "h -lucky"
+ 
+
+# vapply is required to set function value(func.value).
+vapply(i39, fivenum,
+       c(Min. = 0, "1st Qu." = 0, Median = 0, "3rd Qu." = 0, Max. = 0))
+
+
+```
+
+mapply是sapply的多变量版本（multivariate sapply），同时对多列表进行操作。
+
+```{r}
+# R program to illustrate 
+A = list(c(1, 2, 3, 4)) 
+
+B = list(c(2, 5, 1, 6)) 
+
+mapply(prod, A, B) 
+
+
+```
+
+tapply()为向量中的每个因子变量计算一个度量值(均值、中值、最小值、最大值等)或一个函数。我们可以计算每个iris数据里每个物种长度的中位数。
+
+```{r}
+data(iris)
+tapply(iris$Sepal.Width, iris$Species, median)
+# 结果
+     # setosa versicolor  virginica
+     #    3.4        2.8        3.0
+```
+
+### 关系表
+内连接(inner-join)：交. only keeps observations from x that have a matching key in y
+左连接(left-join)：keeps all observations in x.
+右链接(right-join)：keeps all observations in y
+全连接(full-join)：并.keeps all observations in x and y
+
+#### 函数Reduce
+提出问题
+如何将多个数据框按照同一列merge呢？
+
+解决问题
+一个一个merge固然可以，但是费时间且代码看起来十分丑陋，R Base的Reduce函数很好解决了这个问题
+先看一个例子：
+
+```{r}
+
+## cumsum 函数用于分步计算累计和
+ cumsum(1:4)
+# [1] 1 3 6 10
+## 利用 Reduce也可以实现
+ Reduce("+",c(1:4),accumulate =TRUE)
+# [1] 1 3 6 10
+## 若将accumulate赋为FALSE (若不加accumulate则默认为FALSE)
+ Reduce("+",c(1:4),accumulate =FALSE)
+```
+
+#### Reduce函数
+
+从例子中可以看出来Reduce函数是将每次计算后的结果保留，并与下一个数字进行计算，这是和 apply 函数不同的地方。
+因此在对多个数据框进行merge时，可如下操作：
+
+```{r}
+## 定义三个数据框
+ df1 <- data.frame(id=c(1,2,3),name=c('Joseph','Summer','dograbbit'))
+ df2 <- data.frame(id=c(1,2),money=c('0','100'))
+ df3 <- data.frame(id=c(1,3),looking=c('handsom','cute'))
+## Reduce
+ Reduce(function(x,y) merge(x,y,by="id",all.x=TRUE),list(df1,df2,df3),accumulate =FALSE)
+ library(purrr);library(dplyr)
+list(df1,df2,df3) %>% reduce(full_join)
+```
+#### do.call函数
+
+简单的讲，do.call 的功能就是执行一个函数，而这个函数的参数呢，放在一个list里面, 是list的每个子元素。
+```{r}
+ tmp <- data.frame('letter'= letters[1:10],'number'=1:10,'value'= c('+','-'))
+paste0(tmp[[1]],tmp[[2]],tmp[[3]]) 
+do.call('paste0',tmp)
+
+paste0(tmp[[1]],tmp[[2]],tmp[[3]]) == do.call('paste0',tmp)
+
+```
+#### tidyverse之reduce函数
+
+map表示映射，可以在一个或多个列表/向量的每个位置上应用相同函数进行计算。map函数的映射对象只有一个。
+
+```{r}
+# 加载包
+library(purrr)
+# 单个向量map
+1:4 %>%
+  map(rnorm)
+
+```
+
+从map函数的结果来看，其返回与输入向量等长的结果，类型为列表。
+还可以把函数当成一个公式传入，这是purrr提供的高级功能，能够简化代码量。
+
+当函数只有一个参数时，公式函数中用.x代替参数；
+当函数有两个参数时，公式函数中用.x,.y代替参数；
+当函数有多个参数时，公式函数中用..1,..2,..3代替参数。
+```{r}
+
+# 单个向量map,使用公式函数
+1:4 %>%
+  map(~rnorm(.x))
+
+```
+
+map2函数是map函数的变形，映射对象有两个，需要注意两个列表/向量的长度必须相同。
+
+```{r}
+# 两个向量map
+map2(1:3,2:4,sum)
+```
+
+pmap函数是map函数的变形，映射对象为多个，需要注意多个列表/向量的长度必须相同。
+
+
+```{r}
+pmap(list(1:3,2:4,3:5),sum)
+
+```
+
+
+reduce函数表示规约，计算向量中相邻的两个元素，结果再与第三个元素计算，...，最后计算出一个值。
+
+```{r}
+reduce(1:5,'+')
+??reduce
+```
+
+reduce2函数可以同时对两个向量进行规约计算，注意第二个向量长度需要比第一个向量小1。
+
+```{r}
+reduce2(1:4,c(1,1,1),function(x,y,z) x+y-z)
+```
+
+# 第四章 正则表达式       
+
+参考文献：https://github.com/ziishaned/learn-regex/blob/master/translations/README-cn.md
+**什么是正则表达式
+正则表达式（ Regular expression）是一组由字母和符号组成的特殊文本, 它可以用来从文本中找出满足你想要的格式的句子。**
+
+^[a-z0-9_-]{3,15}$
+以上的正则表达式可以接受john_doe、jo-hn_doe、john12_as，但不能匹配Jo，因为它包含了大写字母而且长度不到3个字符。       
+
+## 1. 基本匹配        
+正则表达式其实就是在执行搜索时的格式，它由一些字母和数字组合而成。 例如：一个正则表达式 the，它表示一个规则：由字母t开始，接着是h，再接着是e。        
+
+"the" => The fat cat sat on the mat.        
+
+
+正则表达式123匹配字符串123。它逐个字符的与输入的正则表达式做比较。        
+
+正则表达式是大小写敏感的，所以The不会匹配the。        
+
+"The" => The fat cat sat on the mat.        
+
+## 2. 元字符        
+正则表达式主要依赖于元字符。 元字符不代表他们本身的字面意思，他们都有特殊的含义。一些元字符写在方括号中的时候有一些特殊的意思。以下是一些元字符的介绍：        
+
+|元字符	|描述|
+|.	句号匹配任意单个字符除了换行符。|
+|[ ]	|字符种类。匹配方括号内的任意字符。|
+|[^ ]	|否定的字符种类。匹配除了方括号里的任意字符|
+|*	|匹配>=0个重复的在*号之前的字符。|
+|+	|匹配>=1个重复的+号前的字符。|
+|?	|标记?之前的字符为可选.|
+|{n,m}	|匹配num个大括号之前的字符或字符集 (n <= num <= m).|
+|(xyz)	|字符集，匹配与 xyz 完全相等的字符串.|
+||	|或运算符，匹配符号前或后的字符.|
+|\	|转义字符,用于匹配一些保留的字符 [ ] ( ) { } . * + ? ^ $ \ ||
+|^	|从开始行开始匹配.|
+|$	|从末端开始匹配.|
+
+## 3. 简写字符集        
+正则表达式提供一些常用的字符集简写。如下:       
+
+|简写	|描述|
+|.	|除换行符外的所有字符|
+|\w	|匹配所有字母数字，等同于 [a-zA-Z0-9_]|
+|\W	|匹配所有非字母数字，即符号，等同于： [^\w]|
+|\d	|匹配数字： [0-9]|
+|\D	|匹配非数字： [^\d]|
+|\s	|匹配所有空格字符，等同于： [\t\n\f\r\p{Z}]|
+|\S	|匹配所有非空格字符： [^\s]|
+|\f	|匹配一个换页符|
+|\n	|匹配一个换行符|
+|\r	|匹配一个回车符|
+|\t	|匹配一个制表符|
+|\v	|匹配一个垂直制表符|
+|\p	|匹配 CR/LF（等同于 \r\n），用来匹配 DOS 行终止符 |
+
+
+# 第七章 均值检验
+
+## 单个正态总体均值的检验
+t.test(x, y = NULL,
+       alternative = c("two.sided", "less", "greater"),
+       mu = 0, paired = FALSE, var.equal = FALSE,
+       conf.level = 0.95, ...)
+1.判断拒绝域形式，双侧还是单侧；
+2.mu = ?
+
+```{r}
+##样本均值的抽样分布
+set.seed(12345)
+Pop<-rnorm(100000,mean=4,sd=2)     #正态总体，均值为4，标准差为2
+n=2000
+MeanX<-rep(0,n)
+library(magrittr)
+for(i in 1:n){
+  MeanX[i] <- sample(Pop,size=1000,replace=TRUE) %>% mean()
+}
+
+plot(density(MeanX),xlab="样本均值",ylab="密度",main="样本均值的抽样分布",cex.main=0.8,cex.lab=0.8)
+points(mean(MeanX),sd(MeanX),pch=1,col=1)   #添加圆圈表示估计值
+points(4,sqrt(2^2/1000),pch=2,col=2)    
+
+```
+
+
+## 两个独立正态总体均值差的检验
+1.判断拒绝域形式，双侧还是单侧；
+2.是不是配对数据；
+3.方差是否相等；
+
+t.test(x, y = NULL,
+       alternative = c("two.sided", "less", "greater"),
+       mu = 0, paired = FALSE, var.equal = FALSE,
+       conf.level = 0.95, ...)
+### 方差齐性检验    
+
+car::leveneTest 
+t.test(y~x,var.eq)
+
+### 配对样本            
+t.test(paired = T) 
+
+
+### 两个独立非正态总体的均值比较
+通过假定观测数据抽样自正态分布或者其他性质较好的理论分布，我们学习了假设检验和总体参数的置信区间估计等统计方法。但在许多实际情况中统计假设并不一定满足，比如数据抽样于未知或混合分布、样本量过小、存在离群点、基于理论分布设计合适的统计检验过于复杂且数学上难以处理等情况，这时基于随机化和重抽样的统计方法就可派上用场。
+
+*置换检验*:也称随机化检验或重随机化检验
+coin::oneway_test()
+
+```{r}
+# 虚拟数据中的t检验与单因素置换检验
+library(coin)
+score <- c(40, 57, 45, 55, 58, 57, 64, 55, 62, 65)
+treatment <- factor(c(rep("A",5), rep("B",5)))
+mydata <- data.frame(treatment, score)
+t.test(score~treatment, data=mydata, var.equal=TRUE)
+oneway_test(score~treatment, data=mydata, distribution="exact")
+
+```
+
+*自举法检验*
+一般来说，自助法有三个主要步骤。        
+(1) 写一个能返回待研究统计量值的函数。如果只有单个统计量（如中位数），函数应该返回一个数值；如果有一列统计量（如一列回归系数），函数应该返回一个向量。        
+(2) 为生成R中自助法所需的有效统计量重复数，使用boot()函数对上面所写的函数进行处理。               
+(3) 使用boot.ci()函数获取步骤(2)生成的统计量的置信区间。
+
+```{r }
+rsq <- function(formula, data, indices) {
+ d <- data[indices,]
+ fit <- lm(formula, data=d)
+ return(summary(fit)$r.square)
+}
+
+library(boot)
+set.seed(1234)
+results <- boot(data=mtcars, statistic=rsq,
+ R=1000, formula=mpg~wt+disp)
+
+ boot.ci(results, type=c("perc", "bca"))
+
+```
+
+## 多个正态总体均值的比较   
+
+### 单因素方差分析        
+1.两个假设：        
+  a.不同水平下总体服从正态分布；        
+  b.不同水平下总体方差相等
+2.检验方法：        
+  F检验
+3.R函数：
+  aov
+4.检验原假设：
+  方差齐性检验：leveneTest,LSD检验(aov),多重比较检验(lm)
+  正态检验：qq图(qqnorm)
+
+### 多因素方差分析      
+
+
+## 线性回归
+模型要求：y服从正态分布
+主要函数：
+lm()：拟合模型
+summary():拟合结果输出
+coef(),coefficients():提取回归系数
+confint():提取置信区间
+fitted.values():提取拟合值
+residuals()：提取残差
+plot()：回归诊断
+
+```{r eval = FALSE}
+MyData<-read.table(file="美食餐馆食客评分数据.txt",header=TRUE,sep=" ")
+model<-lm(score_avg~taste+environment+service+cost_avg,data=MyData)
+# 提取模型拟合结果
+summary(model)
+#获取数据结构
+str(summary(model))
+
+# 提取回归结果
+coef <- summary(model)$coefficients
+summary(model)[[4]]
+coef[,1]/coef[,2]==coef[,3] #t统计量是回归系数除以标准误的商
+
+# 提取回归系数
+coefficients(model)
+coef(model)
+# 提取95%置信区间
+confint(model)
+#回归诊断
+par(mfrow=c(2,2))
+plot(model)
+```
+
+
+## 主成分分析和因子分析
+### 步骤        
+
+最常见的步骤如下。
+(1) 数据预处理。PCA和EFA都根据观测变量间的相关性来推导结果。用户可以输入原始数
+据矩阵或者相关系数矩阵到principal()和fa()函数中。在计算前请确保数据中没有缺失值。
+
+(2) 选择因子模型。判断是PCA（数据降维）还是EFA（发现潜在结构）更符合你的研究目
+标。
+
+(3) 判断要选择的主成分/因子数目。主成分：特征值大于1；因子分析：特征值大于0.
+
+(4) 显示主成分/因子系数矩阵。
+
+(5) 旋转主成分/因子。
+
+(6) 解释结果。
+
+(7) 计算主成分或因子得分。需要标准化数据和主成分/因子系数矩阵。
+
+(8)计算综合评价得分。主成分或因子得分的加权平均。
+
+
+### R包       
+R base提供了princomp()和factanal()。psych包中提供的函数提供了比基础函数更丰富和有用的选项。
+
+函 数 |描 述
+---------------
+principal() | 含多种可选的方差旋转方法的主成分分析
+fa() | 可用主轴、最小残差、加权最小平方或最大似然法估计的因子分析
+fa.parallel() | 含平行分析的碎石图
+factor.plot() | 绘制因子分析或主成分分析的结果
+fa.diagram() | 绘制因子分析或主成分的载荷矩阵
+scree() | 因子分析和主成分分析的碎石图
+---------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
