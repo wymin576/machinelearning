@@ -1,0 +1,66 @@
+# 载入必要库
+library(dplyr)
+
+# 初始化训练数据
+train_data <- data.frame(
+  x = 1:10,
+  y = c(5.56, 5.70, 5.91, 6.40, 6.80, 7.05, 8.90, 8.70, 9.00, 9.05)
+)
+
+# 提升树算法参数
+M <- 6
+trees <- list()
+
+# 初始化预测值
+current_pred <- rep(0, nrow(train_data))
+
+for (m in 1:M) {
+  # 计算当前模型残差和损失
+  residuals <- train_data$y - current_pred
+  current_loss <- round(sum(residuals^2), 4)
+  
+  # 生成候选分割点(1.5,2.5,...,9.5)
+  split_candidates <- (train_data$x[-1] + train_data$x[-10])/2
+  
+  # 评估所有分割点
+  split_eval <- data.frame()
+  for (s in split_candidates) {
+    left_mask <- train_data$x <= s
+    c1 <- mean(residuals[left_mask])
+    c2 <- mean(residuals[!left_mask])
+    
+    # 计算该树的平方误差
+    tree_error <- sum((residuals - ifelse(left_mask, c1, c2))^2)
+    
+    split_eval <- rbind(split_eval, 
+                        data.frame(s = s,
+                                   c1 = round(c1,4),
+                                   c2 = round(c2,4),
+                                   error = round(tree_error,4)))
+  }
+  
+  # 选择最优分割
+  best_split <- split_eval[which.min(split_eval$error), ]
+  trees[[m]] <- best_split
+  
+  # 输出关键指标
+  cat(sprintf("\n===== 迭代 %d =====
+              当前模型损失: %.4f
+              本次树损失: %.4f\n",
+              m, current_loss, best_split$error))
+  
+  # 更新预测值
+  current_pred <- current_pred + ifelse(train_data$x <= best_split$s, 
+                                        best_split$c1, best_split$c2)
+}
+
+# 输出最终树结构
+cat("\n====== 最终树结构 ======\n")
+for (i in seq_along(trees)) {
+  cat(sprintf("树%d：分割点s=%.1f，左节点c1=%.4f，右节点c2=%.4f\n",
+              i, trees[[i]]$s, trees[[i]]$c1, trees[[i]]$c2))
+}
+
+# 显示最终预测值
+cat("\n====== 最终预测值 ======\n")
+cat(round(current_pred, 4))
