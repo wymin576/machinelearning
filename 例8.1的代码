@@ -1,0 +1,96 @@
+李航《机器学习方法》例8.1的代码
+# AdaBoost算法实现（二分类）
+adaBoost <- function(X, y, M = 3) {
+# 初始化
+N <- length(y)
+w <- rep(1/N, N) # 初始权重分布D1
+classifiers <- list()
+alphas <- numeric(M)
+
+for (m in 1:M) {
+# (a) 训练弱分类器（基于x<v或x>v的决策树桩）
+best_stump <- train_decision_stump(X, y, w)
+
+# (b) 计算分类误差率
+pred <- ifelse(X <= best_stump$v, best_stump$left_class, best_stump$right_class)
+err <- sum(w * (pred != y))
+
+# (c) 计算分类器系数
+alpha <- 0.5 * log((1 - err)/err)
+
+# (d) 更新权重分布
+w <- w * exp(-alpha * y * pred)
+w <- w / sum(w) # 规范化
+
+# 保存当前迭代结果
+classifiers[[m]] <- best_stump
+alphas[m] <- alpha
+
+# 打印当前迭代信息
+cat(sprintf("\n=== 迭代 %d ===\n", m))
+cat(sprintf("最优分割点v=%.1f, 左类=%d, 右类=%d\n",
+best_stump$v, best_stump$left_class, best_stump$right_class))
+cat(sprintf("分类误差率=%.4f, 分类器系数=%.4f\n", err, alpha))
+cat("更新后的权重分布:", round(w, 4), "\n")
+}
+
+return(list(classifiers = classifiers, alphas = alphas))
+}
+# 训练决策树桩（找到最佳分割点）
+train_decision_stump <- function(X, y, w) {
+candidates <- sort(unique(X))
+best_v <- candidates[1]
+best_err <- Inf
+best_left <- 1
+best_right <- -1
+
+# 检查所有可能的分割点
+for (v in candidates[-1]) {
+# 尝试两种分割方向
+for (direction in c("left_-1", "left_1")) {
+left_class <- ifelse(direction == "left_-1", -1, 1)
+right_class <- -left_class
+
+pred <- ifelse(X <= v, left_class, right_class)
+err <- sum(w * (pred != y))
+
+if (err < best_err) {
+best_err <- err
+best_v <- v
+best_left <- left_class
+best_right <- right_class
+}
+}
+}
+
+return(list(v = best_v, left_class = best_left, right_class = best_right))
+}
+# 表8.1数据（根据图片内容）
+train_data <- data.frame(
+x = 0:9,
+y = c(1, 1, 1, -1, -1, -1, 1, 1, 1, -1)
+)
+# 执行AdaBoost
+set.seed(123)
+result <- adaBoost(train_data$x, train_data$y, M = 3)
+# 输出最终分类器
+cat("\n====== 最终分类器 ======\n")
+cat("G(x) = sign[")
+for (m in 1:length(result$classifiers)) {
+stump <- result$classifiers[[m]]
+cat(sprintf("%.4f * I(x<=%.1f→%d else %d)",
+result$alphas[m], stump$v, stump$left_class, stump$right_class))
+if (m < length(result$classifiers)) cat(" + ")
+}
+cat("]\n")
+# 计算训练集准确率
+final_pred <- 0
+for (m in 1:length(result$classifiers)) {
+stump <- result$classifiers[[m]]
+pred <- ifelse(train_data$x <= stump$v, stump$left_class, stump$right_class)
+final_pred <- final_pred + result$alphas[m] * pred
+}
+final_pred <- sign(final_pred)
+accuracy <- mean(final_pred == train_data$y)
+cat("\n训练集准确率:", round(accuracy, 4))
+
